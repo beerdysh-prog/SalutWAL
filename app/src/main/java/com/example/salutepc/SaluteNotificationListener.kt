@@ -2,6 +2,8 @@ package com.example.salutepc
 
 import android.app.Notification
 import android.content.ComponentName
+import android.os.Handler
+import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -15,23 +17,42 @@ class SaluteNotificationListener : NotificationListenerService() {
         private const val TAG = "SalutePC"
     }
 
+    private val handler = Handler(Looper.getMainLooper())
+    private var rebindAttempts = 0
+
     override fun onListenerConnected() {
         super.onListenerConnected()
+        rebindAttempts = 0
         Log.d(TAG, "Listener connected")
-        showToast("Слушатель уведомлений ПОДКЛЮЧЁН")
+        showToast("Слушатель ПОДКЛЮЧЁН")
     }
 
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
-        Log.d(TAG, "Listener disconnected — пытаемся переподключиться")
+        Log.w(TAG, "Listener disconnected")
         showToast("Слушатель отключился, переподключаем...")
 
-        // Просим систему переподключить сервис
-        try {
-            requestRebind(ComponentName(this, SaluteNotificationListener::class.java))
-        } catch (e: Exception) {
-            Log.e(TAG, "requestRebind failed", e)
+        // Пробуем переподключиться несколько раз с задержкой
+        scheduleRebind()
+    }
+
+    private fun scheduleRebind() {
+        if (rebindAttempts >= 5) {
+            Log.e(TAG, "Слишком много попыток переподключения")
+            return
         }
+
+        rebindAttempts++
+        val delay = (rebindAttempts * 2000).toLong() // 2, 4, 6, 8, 10 сек
+
+        handler.postDelayed({
+            try {
+                Log.d(TAG, "requestRebind attempt $rebindAttempts")
+                requestRebind(ComponentName(this, SaluteNotificationListener::class.java))
+            } catch (e: Exception) {
+                Log.e(TAG, "requestRebind error", e)
+            }
+        }, delay)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -43,60 +64,49 @@ class SaluteNotificationListener : NotificationListenerService() {
             val text = extras?.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
             val bigText = extras?.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
             val subText = extras?.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString() ?: ""
-            val infoText = extras?.getCharSequence(Notification.EXTRA_INFO_TEXT)?.toString() ?: ""
 
-            val full = listOf(title, text, bigText, subText, infoText)
+            val full = listOf(title, text, bigText, subText)
                 .filter { it.isNotBlank() }
                 .joinToString(" | ")
 
             val fullLower = full.lowercase()
 
-            Log.d(TAG, "Notification from [$packageName]: $full")
-
-            // Показываем Toast только для интересных уведомлений (чтобы не спамить)
-            val isInterestingPackage = packageName.lowercase().let { pkg ->
-                pkg.contains("salute") ||
-                pkg.contains("sber") ||
-                pkg.contains("dialog") ||
-                pkg.contains("assistant") ||
-                pkg.contains("smartapp") ||
-                pkg.contains("iot")
-            }
+            Log.d(TAG, "[$packageName] $full")
 
             val containsComputer = fullLower.contains("компьютер") ||
-                    fullLower.contains("комп ") ||
+                    fullLower.contains("комп") ||
                     fullLower.contains("пк")
 
-            if (isInterestingPackage || containsComputer) {
-                showToast("Уведомление: $packageName\n$full")
+            // Показываем Toast только если есть слово про компьютер
+            if (containsComputer) {
+                showToast("Уведомление:\n$full")
+            } else {
+                return
             }
-
-            // Если нет слова "компьютер" — дальше не проверяем
-            if (!containsComputer) return
 
             val prefs = getSharedPreferences("settings", MODE_PRIVATE)
 
             when {
-                // Включение
                 fullLower.contains("включи") || fullLower.contains("включ") -> {
                     val mac = prefs.getString("mac", null)?.trim()
                     if (mac.isNullOrBlank()) {
-                        showToast("MAC-адрес не задан в настройках")
+                        showToast("MAC не задан")
                         return
                     }
 
                     Thread {
                         try {
-                            // Пробуем обычный broadcast и направленный (если указан)
+                            // Основной broadcast
                             WakeOnLan.send(mac)
 
+                            // Дополнительный, если указан
                             val broadcast = prefs.getString("broadcast", null)?.trim()
-                            if (!broadcast.isNullOrBlank() && broadcast != "255.255.255.255") {
+                            if (!broadcast.isNullOrBlank()) {
                                 WakeOnLan.send(mac, broadcast)
                             }
 
-                            showToast("✅ WoL отправлен на $mac")
-                            Log.d(TAG, "WoL successfully sent to $mac")
+                            showToast("✅ WoL отправлен")
+                            Log.d(TAG, "WoL sent to $mac")
                         } catch (e: Exception) {
                             Log.e(TAG, "WoL error", e)
                             showToast("Ошибка WoL: ${e.message}")
@@ -104,14 +114,13 @@ class SaluteNotificationListener : NotificationListenerService() {
                     }.start()
                 }
 
-                // Выключение
                 fullLower.contains("выключи") || fullLower.contains("выключ") -> {
                     val ip = prefs.getString("ip", null)?.trim()
                     val port = prefs.getString("port", "8765")?.trim() ?: "8765"
                     val token = prefs.getString("token", "") ?: ""
 
                     if (ip.isNullOrBlank()) {
-                        showToast("IP компьютера не задан")
+                        showToast("IP не задан")
                         return
                     }
 
@@ -128,8 +137,8 @@ class SaluteNotificationListener : NotificationListenerService() {
                             val code = conn.responseCode
                             conn.disconnect()
 
-                            showToast("Выключение отправлено (код $code)")
-                            Log.d(TAG, "Shutdown response code: $code")
+                            showToast("Выключение отправлено ($code)")
+                            Log.d(TAG, "Shutdown code: $code")
                         } catch (e: Exception) {
                             Log.e(TAG, "Shutdown error", e)
                             showToast("Ошибка выключения: ${e.message}")
@@ -143,12 +152,10 @@ class SaluteNotificationListener : NotificationListenerService() {
     }
 
     private fun showToast(message: String) {
-        android.os.Handler(mainLooper).post {
+        handler.post {
             try {
                 Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
-            } catch (e: Exception) {
-                Log.e(TAG, "Toast error", e)
-            }
+            } catch (_: Exception) {}
         }
     }
 }
