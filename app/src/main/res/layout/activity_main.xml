@@ -2,108 +2,171 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#000000"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="MAC-адрес компьютера (пример: AA:BB:CC:DD:EE:FF)"
+            android:text="Salute PC Control"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
-
-        <EditText
-            android:id="@+id/etMac"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="AA:BB:CC:DD:EE:FF"
-            android:inputType="text"
-            android:layout_marginBottom="16dp"/>
+            android:gravity="center"
+            android:layout_marginBottom="6dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="IP компьютера (для выключения)"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
+            android:text="Управление компьютером через Салют"
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="28dp" />
 
-        <EditText
-            android:id="@+id/etIp"
+        <!-- Блок настроек -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="192.168.1.100"
-            android:inputType="text"
-            android:layout_marginBottom="16dp"/>
+            android:orientation="vertical"
+            android:background="#121212"
+            android:padding="16dp"
+            android:layout_marginBottom="20dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Порт сервера выключения"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="MAC-адрес компьютера"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
 
-        <EditText
-            android:id="@+id/etPort"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="8765"
-            android:inputType="number"
-            android:text="8765"
-            android:layout_marginBottom="16dp"/>
+            <EditText
+                android:id="@+id/etMac"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="AA:BB:CC:DD:EE:FF"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#555555"
+                android:background="#1E1E1E"
+                android:paddingHorizontal="12dp"
+                android:inputType="text"
+                android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Секретный токен"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="IP компьютера"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
 
-        <EditText
-            android:id="@+id/etToken"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="my_secret_token"
-            android:inputType="text"
-            android:layout_marginBottom="24dp"/>
+            <EditText
+                android:id="@+id/etIp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="192.168.1.100"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#555555"
+                android:background="#1E1E1E"
+                android:paddingHorizontal="12dp"
+                android:inputType="text"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Порт"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/etPort"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="8765"
+                android:hint="8765"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#555555"
+                android:background="#1E1E1E"
+                android:paddingHorizontal="12dp"
+                android:inputType="number"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Токен"
+                android:textColor="#CCCCCC"
+                android:textSize="13sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/etToken"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="secret"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#555555"
+                android:background="#1E1E1E"
+                android:paddingHorizontal="12dp"
+                android:inputType="textPassword"
+                android:layout_marginBottom="4dp" />
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="Сохранить настройки"
-            android:layout_marginBottom="12dp"/>
+            android:textColor="#000000"
+            android:backgroundTint="#FFFFFF"
+            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/btnNotificationAccess"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Открыть доступ к уведомлениям"
-            android:layout_marginBottom="12dp"/>
+            android:layout_height="52dp"
+            android:text="Доступ к уведомлениям"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#2A2A2A"
+            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/btnTestOn"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Тест: Включить ПК (WoL)"
-            android:layout_marginBottom="8dp"/>
+            android:layout_height="52dp"
+            android:text="Тест: Включить ПК"
+            android:textColor="#000000"
+            android:backgroundTint="#FFFFFF"
+            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/btnTestOff"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Тест: Выключить ПК"/>
+            android:layout_height="52dp"
+            android:text="Тест: Выключить ПК (отключено)"
+            android:textColor="#666666"
+            android:backgroundTint="#1A1A1A"
+            android:enabled="false"
+            android:layout_marginBottom="28dp" />
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:text="Статус: ожидание"
-            android:textSize="14sp"/>
+            android:textColor="#888888"
+            android:textSize="14sp"
+            android:gravity="center" />
 
     </LinearLayout>
 </ScrollView>
